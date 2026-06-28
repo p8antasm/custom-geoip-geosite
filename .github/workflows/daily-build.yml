@@ -17,14 +17,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: Automodality/action-clean@v1
-      - uses: actions/checkout@v4
+      - name: Checkout and clean
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
 
       - name: Set up Go environment
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-          cache: true
+          cache: false
 
       - name: Go install v2fly/geoip tool
         run: go install github.com/v2fly/geoip@latest
@@ -37,12 +40,21 @@ jobs:
           cd ./output
           sha256sum geoip.dat > geoip.dat.sha256sum
 
-      - name: Upload and Publish to GitHub Releases
+      - name: Generate release tag
+        id: tag
+        run: echo "release_tag=v$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Delete old-latest release
+        run: gh release delete latest --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload and Publish latest release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: "Daily automated build"
-          body: "Automated daily compilation of GeoIP and not Geosite data."
+          body: "Automated daily compilation of GeoIP data. Generated on $(date +'%Y.%m.%d-%H%M')."
           draft: false
           prerelease: false
           make_latest: true
@@ -50,6 +62,23 @@ jobs:
             ./output/geoip.dat
             ./output/geoip.dat.sha256sum
 
-      - name: Workspace cleanup
-        if: always()
-        uses: Automodality/action-clean@v1
+      - name: Create historical backup release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          name: "Archive Build #${{ github.run_number }}"
+          body: "Backup history release."
+          draft: false
+          prerelease: false
+          make_latest: false
+          files: |
+            ./output/geoip.dat
+            ./output/geoip.dat.sha256sum
+
+      - name: Keep 5 releases in history
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 5
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
