@@ -4,14 +4,14 @@
       "type": "v2rayGeoIPDat",
       "action": "add",
       "args": {
-        "uri": ".hydraponique-geoip.dat"
+        "uri": "./hydraponique-geoip.dat"
       }
     },
     {
       "type": "v2rayGeoIPDat",
       "action": "add",
       "args": {
-        "uri": ".runetfreedom-geoip.dat"
+        "uri": "./runetfreedom-geoip.dat"
       }
     }
   ],
