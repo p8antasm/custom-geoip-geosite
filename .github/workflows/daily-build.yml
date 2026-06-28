@@ -1,0 +1,70 @@
+name: Daily GeoIP and Geosite Compiler
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs every day at 02:00 UTC
+  workflow_dispatch: # Allows you to trigger it manually anytime
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: self-hosted
+    permissions:
+      contents: write # Required to upload assets to Releases
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Clone v2fly/geoip tool
+        run: |
+          git clone https://https://github.com/v2fly/geoip.git
+
+      - name: Prepare go env
+        run: |
+          cd geoip && go mod download
+
+      - name: Create work dirs
+        run: |
+          mkdir -p downloads
+          mkdir -p output
+
+      - name: Download source geoip.dat files
+        run: |
+          curl -L -o downloads/hydraponique-geoip.dat https://github.com/hydraponique/roscomvpn-geoip/releases/latest/download/geoip.dat
+          curl -L -o downloads/runetfreedom-geoip.dat https://raw.githubusercontent.com/runetfreedom/russia-blocked-geoip/release/geoip.dat
+
+      - name: Copy compiler config
+        run: |
+          cp config.json geoip/config.json
+          cp -r downloads geoip/
+
+      - name: Build custom geoip.dat files
+        run: |
+          cd geoip
+          go run ./
+          cp -r output ../
+
+      - name: Generate sha256 checksums
+        run: |
+          cd output
+          sha256sum geoip.dat > geoip.dat.sha256sum
+
+      - name: Upload and Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Daily automated build"
+          body: "Automated daily compilation of GeoIP and not Geosite data."
+          draft: false
+          prerelease: false
+          files: |
+            ./output/geoip.dat
+            ./output/geoip.dat.sha256sum
