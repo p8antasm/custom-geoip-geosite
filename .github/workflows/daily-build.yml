@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 2 * * *' # Runs every day at 02:00 UTC
   workflow_dispatch: # Manual trigger from UI
+  push:
+    paths:
+      - 'config.json'
 
 permissions:
   contents: write
@@ -11,8 +14,7 @@ permissions:
 jobs:
   build:
     runs-on: self-hosted
-    permissions:
-      contents: write # Required to upload assets to Releases
+    timeout-minutes: 5
 
     steps:
       - uses: Automodality/action-clean@v1
@@ -25,17 +27,15 @@ jobs:
           cache: true
 
       - name: Go install v2fly/geoip tool
-        run: |
-          go install github.com/v2fly/geoip@latest
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        run: go install github.com/v2fly/geoip@latest
 
       - name: Build custom geoip.dat files
-        run: |
-          geoip -c ./config.json
+        run: $(go env GOPATH)/bin/geoip -c ./config.json
 
       - name: Generate sha256 checksums
         run: |
-          sha256sum ./output/geoip.dat > ./output/geoip.dat.sha256sum
+          cd ./output
+          sha256sum geoip.dat > geoip.dat.sha256sum
 
       - name: Upload and Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -45,6 +45,11 @@ jobs:
           body: "Automated daily compilation of GeoIP and not Geosite data."
           draft: false
           prerelease: false
+          make_latest: true
           files: |
             ./output/geoip.dat
             ./output/geoip.dat.sha256sum
+
+      - name: Workspace cleanup
+        if: always()
+        uses: Automodality/action-clean@v1
