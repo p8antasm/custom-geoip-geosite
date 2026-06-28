@@ -40,17 +40,20 @@ jobs:
         run: |
           curl -L -o downloads/hydraponique-geoip.dat https://github.com/hydraponique/roscomvpn-geoip/releases/latest/download/geoip.dat
           curl -L -o downloads/runetfreedom-geoip.dat https://raw.githubusercontent.com/runetfreedom/russia-blocked-geoip/release/geoip.dat
+          ls -R
 
       - name: Copy compiler config
         run: |
           cp config.json geoip/config.json
           cp -r downloads geoip/
+          ls -R
 
       - name: Build custom geoip.dat files
         run: |
           cd geoip
           go run ./
           cp -r output ../
+          ls -R
 
       - name: Generate sha256 checksums
         run: |
