@@ -49,13 +49,12 @@ jobs:
         id: tag
         run: |
           echo "release_tag=v$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
-          echo "time_tag=$(date +'%M:%H %d.%m.%Y')" >> $GITHUB_OUTPUT
+          echo "time_tag=$(date +'%H:%M %d.%m.%Y')" >> $GITHUB_OUTPUT
 
       - name: Upload and Publish latest release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          target_commitish: ${{ github.sha }}
           name: "Daily automated build"
           body: "Automated daily compilation of GeoIP data. Generated on ${{ steps.tag.outputs.time_tag }}."
           draft: false
