@@ -40,9 +40,11 @@ jobs:
           cd ./output
           sha256sum geoip.dat > geoip.dat.sha256sum
 
-      - name: Generate release tag
+      - name: Generate release and time tag
         id: tag
-        run: echo "release_tag=v$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        run: |
+          echo "release_tag=v$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+          echo "time_tag=v$(date +'%M:%H %d.%m.%Y')" >> $GITHUB_OUTPUT
 
       - name: Delete old-latest release
         run: gh release delete latest --yes --cleanup-tag || true
@@ -54,7 +56,7 @@ jobs:
         with:
           tag_name: latest
           name: "Daily automated build"
-          body: "Automated daily compilation of GeoIP data. Generated on $(date +'%Y%m%d%H%M')."
+          body: "Automated daily compilation of GeoIP data. Generated on ${{ steps.tag.outputs.time_tag }}."
           draft: false
           prerelease: false
           make_latest: true
