@@ -31,20 +31,9 @@ jobs:
         run: |
           cd geoip && go mod download
 
-      - name: Create work dirs
-        run: |
-          mkdir -p downloads
-          mkdir -p output
-
-      - name: Download source geoip.dat files
-        run: |
-          curl -L -o downloads/hydraponique-geoip.dat https://github.com/hydraponique/roscomvpn-geoip/releases/latest/download/geoip.dat
-          curl -L -o downloads/runetfreedom-geoip.dat https://raw.githubusercontent.com/runetfreedom/russia-blocked-geoip/release/geoip.dat
-
       - name: Copy compiler config
         run: |
           cp config.json geoip/config.json
-          cp -r downloads/. geoip/
 
       - name: Build custom geoip.dat files
         run: |
