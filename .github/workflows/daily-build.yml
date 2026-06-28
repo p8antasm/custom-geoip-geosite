@@ -25,7 +25,7 @@ jobs:
 
       - name: Clone v2fly/geoip tool
         run: |
-          git clone https://https://github.com/v2fly/geoip.git
+          git clone https://github.com/v2fly/geoip.git
 
       - name: Prepare go env
         run: |
