@@ -1,8 +1,8 @@
 name: Daily GeoIP and Geosite Compiler
 
 on:
-  schedule:
-    - cron: '0 2 * * *' # Runs every day at 02:00 UTC
+  #schedule:
+  #  - cron: '0 2 * * *' # Runs every day at 02:00 UTC
   workflow_dispatch: # Manual trigger from UI
   push:
     paths:
